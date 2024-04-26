@@ -1,0 +1,177 @@
+# TicTacToe Terminal Game
+def main():
+    playerTurn = True
+    game = '''
+                     1 |  2  | 3     |      |     |   
+                    ---|-----|---    |   ---|-----|---
+                     4 |  5  | 6     |      |     |    
+                    ---|-----|---    |   ---|-----|---
+                     7 |  8  | 9     |      |     |   
+                    '''
+    grid = {
+        1: [0, 0],  2: [0, 1],  3: [0, 2],
+        4: [1, 0],  5: [1, 1],  6: [1, 2],
+        7: [2, 0],  8: [2, 1],  9: [2, 2]
+    }
+    PiecePossition = {
+        0: [0, 0, 0],
+        1: [0, 0, 0],
+        2: [0, 0, 0]
+    }
+    gameState = True
+    TakenMoves = []
+
+    ### Core Game Loop ############################################
+    while gameState:
+        StatementTurn(playerTurn)
+        # Tells the user whos turn it is
+        MoveList, PlayersSelectedSpot = ValidMoveLoop(TakenMoves, game)
+        # Asks for valid move
+        TakenMoves = MoveList
+        # Updates moves already Taken
+
+        gridSpot = grid.get(PlayersSelectedSpot)
+        # Saves where the player wanted to make their move
+        playersSymbol = gameState
+        # Tells you if player is X or player is O (True = X, False = O)
+
+        PiecePossition = UpdatePiecePossitions(
+            PiecePossition, gridSpot, playerTurn)
+
+        game = UpdatedGameBoard(game, playerTurn, PlayersSelectedSpot)
+        # Updates game board
+
+        CheckForWin(PiecePossition, TakenMoves, playerTurn)
+
+        ### Reset for Loop ############################################
+        # Swaps the turn for the next iteration
+        playerTurn = SwapTurn(playerTurn)
+
+
+### Definitions    ############################################
+
+
+def SwapTurn(playerTurn):
+    if playerTurn == True:
+        return False
+    else:
+        return True
+
+
+def StatementTurn(playerTurn):
+    if playerTurn == True:
+        return """
+                    It's Player 1's Turn!
+                    """
+    else:
+        return """
+                    It's Player 2's Turn!
+                    """
+
+
+def ValidMoveLoop(TakenMoves, game):
+    playerMadeValidMove = False
+
+    while playerMadeValidMove == False:
+        # Player move loop
+        PlayerSelectedSpot = PlayerMove(game)
+        # Ask's the player what spot they want
+        spotTaken = CheckOpenSpot(PlayerSelectedSpot, TakenMoves)
+        # Checks for Valid move
+        if spotTaken == False:
+            playerMadeValidMove = True
+            newMoveList = TakenMoves
+            newMoveList.append(PlayerSelectedSpot)
+            return newMoveList, PlayerSelectedSpot
+        else:
+            print("""
+                      
+ERROR:     Please try again and Make a Valid move.
+
+                      """)
+
+
+def PlayerMove(game):
+    print(game)
+    spot = int(input("Pick a location 1-9 to place you piece: "))
+    return spot
+
+
+def CheckOpenSpot(PlayerSelectedSpot, TakenMoves):
+    if PlayerSelectedSpot in TakenMoves:
+        return True
+    else:
+        return False
+
+
+def UpdatePiecePossitions(PiecePossition, GridSpot, playersSymbol):
+    symbol = FetchSymbol(playersSymbol)
+    row = FetchRow(PiecePossition, GridSpot)
+    row[GridSpot[1]] = symbol
+    PiecePossition[GridSpot[0]] = row
+    return PiecePossition
+
+
+def FetchRow(PiecePossition, GridSpot):
+    return PiecePossition[GridSpot[0]]
+
+
+def FetchSymbol(playersSymbol):
+    if playersSymbol == True:
+        return 1
+    else:
+        return 2
+
+
+def UpdatedGameBoard(game, playerTurn, PlayersSelectedSpot):
+    location = game.rfind(str(PlayersSelectedSpot)) + 21
+    symbol = FetchSymbol(playerTurn)
+    symbolXO = FetchSymbolXY(symbol)
+
+    updateGame = game[:location] + symbolXO + game[location+1:]
+    return updateGame
+
+
+def FetchSymbolXY(symbol):
+    if symbol == 1:
+        return "X"
+    else:
+        return "O"
+
+
+def CheckForWin(PiecePossition, TakenMoves, playerTurn):
+
+    for x in PiecePossition:
+        for y in range(1, 3):
+            row = PiecePossition[x]
+            if row[0] == y and row[1] == y and row[2] == y:
+                PlayerWon(playerTurn)
+
+    row0 = PiecePossition[0]
+    row1 = PiecePossition[1]
+    row2 = PiecePossition[2]
+
+    for y in range(1, 3):
+        if row0[0] == y and row1[0] == y and row2[0] == y:
+            PlayerWon(playerTurn)
+        elif row0[1] == y and row1[1] == y and row2[1] == y:
+            PlayerWon(playerTurn)
+        elif row0[2] == y and row1[2] == y and row2[2] == y:
+            PlayerWon(playerTurn)
+        elif row0[0] == y and row1[1] == y and row2[2] == y:
+            PlayerWon(playerTurn)
+        elif row0[2] == y and row1[1] == y and row2[0] == y:
+            PlayerWon(playerTurn)
+
+    if TakenMoves == 9:
+        print("Game is a draw!")
+    return
+
+
+def PlayerWon(playerTurn):
+    symbol = FetchSymbol(playerTurn)
+    print(f"Player {symbol} won!")
+    quit()
+
+
+main()
